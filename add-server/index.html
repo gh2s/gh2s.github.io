@@ -1,0 +1,79 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>Submit Server</title>
+<style>
+    body {
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #101823;
+        color: white;
+        font-size: 1.2rem;
+
+    }
+    input[type="text"]
+{
+    font-size:20px;
+    margin-top: 1rem;
+    background-color: #101823;
+    color: white;
+    border: 1px solid #FF4754;
+    border-radius: 3px;
+}
+
+</style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <h1>Submit Server</h1>
+        <br><br><br>
+        <div style="align-self: center; display: flex; justify-content: center;">
+            <div style="display: flex; justify-content: center; flex-direction: column; width: 24rem;">
+                <label for="inv" style="text-align: left;">Invite URL:</label>
+                <input oninput="checkInv()" type="text" name="" id="inv" placeholder="https://app.revolt.chat/invite/abc123yz">
+            </div>
+    
+        </div>
+
+    </div>
+
+<script>
+
+    async function fetch_invite(url) {
+        try {
+            const inv_code = url.split(".revolt.chat/invite/")[1];
+        const resp = await fetch("https://cors.eu.org/https://api.revolt.chat/invites/" + inv_code, {
+            method: 'GET',
+            mode: 'cors'
+        })
+        const jsonData = await resp.json();
+        console.log(jsonData);
+        const server_name = encodeURIComponent(jsonData.server_name);
+        const server_icon = encodeURIComponent(`https://autumn.revolt.chat/icons/${jsonData.server_icon._id}/${jsonData.server_icon.filename}?max_side=256`);
+        const invite_url = encodeURIComponent("https://app.revolt.chat/invite/"+inv_code);
+        const owner_name = encodeURIComponent("");
+        const owner_id = encodeURIComponent(jsonData.owner_id ?? "");
+        let outUrl = `https://github.com/RevoltSocial/lists/issues/new?assignees=&labels=Server-Submission&template=submit-server.yaml&title=Server+Submission&server-name=${server_name}&server-icon=${server_icon}&server-owner-name=${owner_name}&server-owner-id=${owner_id}&invite-url=${invite_url}`;
+        window.location.replace(outUrl);
+        } catch(err) {
+            alert("Invalid Invite. It must be https://app.revolt.chat/invite/ABC123XY and there must be a server icon set.");
+            window.location.reload();
+        }
+
+    }
+    async function checkInv() {
+        let inv_code = document.getElementById("inv").value;
+       
+        if(inv_code.includes("nightly.revolt.chat")) {
+            inv_code = inv_code.replace("nightly.revolt.chat", "app.revolt.chat");
+        }
+        console.log(inv_code)
+        if(inv_code && inv_code.startsWith("https://app.revolt.chat/invite/") && inv_code.length >= 39 && inv_code.length <= 40) {
+            document.getElementById("inv").style.border = "1px solid #47ff56";
+            document.getElementById("inv").disabled = true;
+            await fetch_invite(inv_code);
+        }
+    }
+
+</script>
+</body>
+</html>
